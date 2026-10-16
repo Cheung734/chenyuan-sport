@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>陈垣中学运动会管理系统</title>
+  <style>
+    * {box-sizing: border-box;margin:0;padding:0;font-family:system-ui}
+    body {background:#f4f7fa;color:#222;padding:8px}
+    .container {max-width:1000px;margin:0 auto}
+    header {background:#1f4b99;color:#fff;padding:12px;border-radius:8px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+    header img {width:60px;height:60px;border-radius:50%}
+    .card {background:#fff;border-radius:8px;padding:14px;margin-bottom:10px;box-shadow:0 1px 4px #0002}
+    .btn {padding:8px 14px;border:none;border-radius:6px;cursor:pointer;margin:3px}
+    .btn-primary {background:#1f4b99;color:white}
+    .btn-danger {background:#d63031;color:white}
+    .btn-warning {background:#fdcb6e;color:#222}
+    input,select,textarea {width:100%;padding:8px;margin:6px 0;border:1px solid #ccc;border-radius:6px}
+    table {width:100%;border-collapse:collapse;margin:8px 0}
+    th,td {border:1px solid #ddd;padding:7px;text-align:center}
+    .nav {display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+    .nav button {flex:1;padding:10px}
+    .hide {display:none}
+    .warn {background:#fff3cd;color:#856404;padding:10px;border-radius:6px;margin:8px 0;border:1px solid #ffeeba}
+    .modal {position:fixed;inset:0;background:#0007;display:flex;align-items:center;justify-content:center}
+    .modal-box {background:#fff;padding:20px;border-radius:10px;width:90%;max-width:500px}
+  </style>
+</head>
+<body>
+<div class="container" id="app">
+  <!--登录页-->
+  <div id="page-login">
+    <div class="card">
+      <h2>陈垣中学运动会管理系统</h2>
+      <p>账号登录</p >
+      <input type="text" id="loginUser" placeholder="登录账号">
+      <input type="password" id="loginPwd" placeholder="密码">
+      <button class="btn btn-primary" onclick="login()">登录</button>
+    </div>
+  </div>
+
+  <!--主系统界面，登录后显示-->
+  <div id="page-main" class="hide">
+    <header>
+      <div>
+        <h2>陈垣中学运动会管理系统</h2>
+      </div>
+    </header>
+    <div class="nav">
+      <button onclick="switchTab('home')">首页</button>
+      <button onclick="switchTab('meet')">届次管理</button>
+      <button onclick="switchTab('student')">学生管理</button>
+      <button onclick="switchTab('event')">比赛项目</button>
+      <button onclick="switchTab('signup')">报名管理</button>
+      <button onclick="switchTab('schedule')">赛程</button>
+      <button onclick="switchTab('checkin')">检录</button>
+      <button onclick="switchTab('score')">成绩与公告</button>
+      <button onclick="switchTab('setting')">规则设置</button>
+      <button onclick="switchTab('account')">账号管理</button>
+      <button class="btn btn-danger" onclick="logout()">退出</button>
+    </div>
+    <div id="tab-home" class="tab-content">
+      <div class="card"><h3>欢迎进入校运会系统</h3><p>顶部导航选择功能模块开始操作</p ></div>
+    </div>
+    <div id="tab-meet" class="tab-content hide"><div class="card"><h3>校运会届次管理（每一届独立数据）</h3></div></div>
+    <div id="tab-student" class="tab-content hide"><div class="card"><h3>全校学生批量导入（Excel模板上传）</h3></div></div>
+    <div id="tab-event" class="tab-content hide">
+      <div class="card">
+        <h3>比赛项目管理</h3>
+        <p>新增项目时，赛事类型：田赛 / 径赛 / 团体赛 / 班级赛</p >
+        <p>班级赛配置：可报名年级、性别限制、每队人数上限、赛制(单循环/单败淘汰，季军战开关)、预计单场时长(分钟)、<b>默认比赛场地（手动输入）</b></p >
+        <p>生成赛程后，单场赛程编辑可单独修改【本场比赛场地】</p >
+      </div>
+    </div>
+    <div id="tab-signup" class="tab-content hide"><div class="card"><h3>报名系统</h3></div></div>
+    <div id="tab-schedule" class="tab-content hide">
+      <div class="card">
+        <h3>赛程编排</h3>
+        <p>径赛短跑默认每组最多6人；800/1000米不受6人限制。同场地同时段冲突黄色警告。</p >
+        <p>单场详情页面：【本场重赛（清空本场数据）】按钮，点击弹窗提示：</p >
+        <div class="warn">⚠️警告：执行本场重赛操作后，本场已录入的所有成绩、检录签到记录将全部清除，无法恢复！确认要重置本场比赛吗？</div>
+      </div>
+    </div>
+    <div id="tab-checkin" class="tab-content hide"><div class="card"><h3>检录管理</h3></div></div>
+    <div id="tab-score" class="tab-content hide"><div class="card"><h3>成绩录入与全校成绩公告栏</h3></div></div>
+    <div id="tab-setting" class="tab-content hide"><div class="card"><h3>规则与积分设置</h3></div></div>
+    <div id="tab-account" class="tab-content hide"><div class="card"><h3>账号管理：admin管理员 + 39个班级报名账号</h3></div></div>
+    <div class="modal hide" id="modalConfirm">
+      <div class="modal-box">
+        <h3 id="modalTitle"></h3>
+        <p id="modalText"></p >
+        <div style="text-align:right;margin-top:12px">
+          <button class="btn" onclick="closeModal()">取消</button>
+          <button class="btn btn-danger" id="modalOkBtn">确认</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+// =================基础账号配置=================
+const userDB = {
+  admin:{pwd:"admin123",role:"admin",name:"体育老师管理员"},
+  "class_1_1":{pwd:"123456",role:"class",className:"一年级1班"},
+  "class_1_2":{pwd:"123456",role:"class",className:"一年级2班"},
+  "class_1_3":{pwd:"123456",role:"class",className:"一年级3班"},
+  "class_1_4":{pwd:"123456",role:"class",className:"一年级4班"},
+  "class_1_5":{pwd:"123456",role:"class",className:"一年级5班"},
+
+  "class_2_1":{pwd:"123456",role:"class",className:"二年级1班"},
+  "class_2_2":{pwd:"123456",role:"class",className:"二年级2班"},
+  "class_2_3":{pwd:"123456",role:"class",className:"二年级3班"},
+  "class_2_4":{pwd:"123456",role:"class",className:"二年级4班"},
+  "class_2_5":{pwd:"123456",role:"class",className:"二年级5班"},
+  "class_2_6":{pwd:"123456",role:"class",className:"二年级6班"},
+
+  "class_3_1":{pwd:"123456",role:"class",className:"三年级1班"},
+  "class_3_2":{pwd:"123456",role:"class",className:"三年级2班"},
+  "class_3_3":{pwd:"123456",role:"class",className:"三年级3班"},
+  "class_3_4":{pwd:"123456",role:"class",className:"三年级4班"},
+  "class_3_5":{pwd:"123456",role:"class",className:"三年级5班"},
+  "class_3_6":{pwd:"123456",role:"class",className:"三年级6班"},
+
+  "class_4_1":{pwd:"123456",role:"class",className:"四年级1班"},
+  "class_4_2":{pwd:"123456",role:"class",className:"四年级2班"},
+  "class_4_3":{pwd:"123456",role:"class",className:"四年级3班"},
+  "class_4_4":{pwd:"123456",role:"class",className:"四年级4班"},
+  "class_4_5":{pwd:"123456",role:"class",className:"四年级5班"},
+
+  "class_5_1":{pwd:"123456",role:"class",className:"五年级1班"},
+  "class_5_2":{pwd:"123456",role:"class",className:"五年级2班"},
+  "class_5_3":{pwd:"123456",role:"class",className:"五年级3班"},
+  "class_5_4":{pwd:"123456",role:"class",className:"五年级4班"},
+
+  "class_6_1":{pwd:"123456",role:"class",className:"六年级1班"},
+  "class_6_2":{pwd:"123456",role:"class",className:"六年级2班"},
+
+  "class_7_1":{pwd:"123456",role:"class",className:"七年级1班"},
+  "class_7_2":{pwd:"123456",role:"class",className:"七年级2班"},
+  "class_7_3":{pwd:"123456",role:"class",className:"七年级3班"},
+  "class_7_4":{pwd:"123456",role:"class",className:"七年级4班"},
+  "class_7_5":{pwd:"123456",role:"class",className:"七年级5班"},
+
+  "class_8_1":{pwd:"123456",role:"class",className:"八年级1班"},
+  "class_8_2":{pwd:"123456",role:"class",className:"八年级2班"},
+  "class_8_3":{pwd:"123456",role:"class",className:"八年级3班"},
+  "class_8_4":{pwd:"123456",role:"class",className:"八年级4班"},
+  "class_8_5":{pwd:"123456",role:"class",className:"八年级5班"},
+  "class_8_6":{pwd:"123456",role:"class",className:"八年级6班"},
+}
+let currentUser=null;
+
+//页面切换
+function switchTab(tabName){
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.add('hide'));
+  document.getElementById(`tab-${tabName}`).classList.remove('hide');
+}
+function login(){
+  const u=document.getElementById('loginUser').value;
+  const p=document.getElementById('loginPwd').value;
+  if(!userDB[u] || userDB[u].pwd!==p){
+    alert('账号密码错误');return;
+  }
+  currentUser=userDB[u];
+  document.getElementById('page-login').classList.add('hide');
+  document.getElementById('page-main').classList.remove('hide');
+  switchTab('home');
+}
+function logout(){
+  currentUser=null;
+  document.getElementById('page-login').classList.remove('hide');
+  document.getElementById('page-main').classList.add('hide');
+}
+function openModal(title,txt,okCallback){
+  document.getElementById('modalTitle').innerText=title;
+  document.getElementById('modalText').innerText=txt;
+  document.getElementById('modalConfirm').classList.remove('hide');
+  document.getElementById('modalOkBtn').onclick=()=>{
+    closeModal();okCallback();
+  }
+}
+function closeModal(){
+  document.getElementById('modalConfirm').classList.add('hide');
+}
+</script>
+</body>
+</html>
